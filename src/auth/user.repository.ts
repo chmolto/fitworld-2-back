@@ -21,10 +21,10 @@ export class UserRepository extends Repository<User> {
     user.password = await this.hashPassword(password, user.salt);
     try {
       await user.save();
-      console.log('ASDASDASDDASADSDAS');
     } catch (error) {
-      console.log(JSON.parse(error));
       console.log(error);
+      console.log(error.code);
+      console.log(JSON.parse(error));
       error = JSON.parse(error);
       if (error.code === ErrorConstants.ERROR_UNIQUE_COLUMN) {
         if (error.detail.includes('Ya existe la llave (username)')) {
