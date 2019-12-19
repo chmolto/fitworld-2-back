@@ -21,7 +21,12 @@ export class UserRepository extends Repository<User> {
     user.password = await this.hashPassword(password, user.salt);
     try {
       await user.save();
+      console.log('ASDASDASDDASADSDAS');
+
     } catch (error) {
+      console.log(error);
+      console.log('PORONGA');
+      
       if (error.code === ErrorConstants.ERROR_UNIQUE_COLUMN) {
         if (error.detail.includes('Ya existe la llave (username)')) {
           throw new ConflictException('Username already exists');
