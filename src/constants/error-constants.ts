@@ -1,3 +1,3 @@
 export class ErrorConstants {
-  public static ERROR_UNIQUE_COLUMN: string = '23505';
+  public static ERROR_UNIQUE_COLUMN: number = 23505;
 }
