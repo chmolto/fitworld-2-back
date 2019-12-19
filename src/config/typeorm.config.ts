@@ -5,11 +5,11 @@ const dbConfig = config.get('db');
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
     type: dbConfig.type,
-    host: dbConfig.host,
+    host: process.env.DATABASE_URL || dbConfig.host,
     port: dbConfig.port,
     username: dbConfig.username,
     password: dbConfig.password,
-    database: process.env.DATABASE_URL || dbConfig.database,
+    database: dbConfig.database,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     synchronize: dbConfig.synchronize,
 }
