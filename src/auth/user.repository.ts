@@ -22,7 +22,8 @@ export class UserRepository extends Repository<User> {
     try {
       await user.save();
     } catch (error) {
-      if (error.code === ErrorConstants.ERROR_UNIQUE_COLUMN) {
+      console.log(error);
+      if (error.code == ErrorConstants.ERROR_UNIQUE_COLUMN) {
         if (error.detail.includes('Ya existe la llave (username)')) {
           throw new ConflictException('Username already exists');
         }
