@@ -15,5 +15,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   password: connectionOptions.password,
   database: connectionOptions.database,
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  synchronize: dbConfig.synchronize,
+  synchronize: true,
 };
