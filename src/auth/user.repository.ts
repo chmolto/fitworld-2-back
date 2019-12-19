@@ -22,11 +22,10 @@ export class UserRepository extends Repository<User> {
     try {
       await user.save();
       console.log('ASDASDASDDASADSDAS');
-
     } catch (error) {
+      console.log(JSON.parse(error));
       console.log(error);
-      console.log('PORONGA');
-      
+      error = JSON.parse(error);
       if (error.code === ErrorConstants.ERROR_UNIQUE_COLUMN) {
         if (error.detail.includes('Ya existe la llave (username)')) {
           throw new ConflictException('Username already exists');
