@@ -24,10 +24,10 @@ export class UserRepository extends Repository<User> {
     } catch (error) {
       console.log(error);
       if (error.code == ErrorConstants.ERROR_UNIQUE_COLUMN) {
-        if (error.detail.includes('Ya existe la llave (username)')) {
+        if (error.detail.includes('(username)')) {
           throw new ConflictException('Username already exists');
         }
-        if (error.detail.includes('Ya existe la llave (email)')) {
+        if (error.detail.includes('(email)')) {
           throw new ConflictException('Email already exists');
         }
       } else {
