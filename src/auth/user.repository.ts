@@ -9,6 +9,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
+import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -38,7 +39,7 @@ export class UserRepository extends Repository<User> {
 
   async validateUserPassword(
     loginCredentialsDto: LoginCredentialsDto,
-  ): Promise<string> {
+  ): Promise<User> {
     const { username, password } = loginCredentialsDto;
 
     let user = await this.findOne({ username });
@@ -47,13 +48,64 @@ export class UserRepository extends Repository<User> {
     }
 
     if (user && (await user.validatePassword(password))) {
-      return user.username;
+      this.clearSensitiveInfoUser(user);
+      return user;
     } else {
       return null;
     }
   }
 
+  async updateUser(
+    updateCredentialsDto: UpdateCredentialsDto,
+    user: User,
+  ): Promise<User> {
+    updateCredentialsDto.username
+      ? (user.username = updateCredentialsDto.username)
+      : null;
+
+    updateCredentialsDto.newPassword
+      ? (user = await this.setNewPassword(updateCredentialsDto, user))
+      : null;
+
+    updateCredentialsDto.height
+      ? (user.height = updateCredentialsDto.height)
+      : null;
+
+    updateCredentialsDto.username
+      ? (user.weight = updateCredentialsDto.weight)
+      : null;
+
+    updateCredentialsDto.username
+      ? (user.image = updateCredentialsDto.image)
+      : null;
+
+    user.save();
+    this.clearSensitiveInfoUser(user);
+    return user;
+  }
+
+  private async setNewPassword(
+    updateCredentialsDto: UpdateCredentialsDto,
+    user: User,
+  ): Promise<User> {
+    if (await user.validatePassword(updateCredentialsDto.oldPassword)) {
+      user.password = await this.hashPassword(
+        updateCredentialsDto.newPassword,
+        user.salt,
+      );
+    } else {
+      throw new ConflictException('Current password incorrect');
+    }
+    return user;
+  }
+
   private async hashPassword(password: string, salt: string) {
     return bcrypt.hash(password, salt);
+  }
+
+  private clearSensitiveInfoUser(user:User){
+    user.password = null;
+    user.salt = null;
+    return user;
   }
 }
