@@ -21,7 +21,7 @@ export class UpdateCredentialsDto {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'Password too weak',
   })
-  newPassword: string;
+  password: string;
 
   @IsOptional()
   @IsString()

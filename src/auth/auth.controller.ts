@@ -12,6 +12,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { User } from './entities/user.entity';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
+import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +26,7 @@ export class AuthController {
   @Post('/signin')
   public signIn(
     @Body(ValidationPipe) loginCredentialsDto: LoginCredentialsDto,
-  ): Promise<{ accessToken, user }> {
+  ): Promise<{ accessToken; user }> {
     return this.authService.signIn(loginCredentialsDto);
   }
 
@@ -34,7 +35,7 @@ export class AuthController {
   public updateUser(
     @GetUser() user: User,
     @Body(ValidationPipe) updateCredentialsDto: UpdateCredentialsDto,
-  ): Promise<User> {
+  ): Promise<ReturnUpdatedUser> {
     return this.authService.updateUser(updateCredentialsDto, user);
   }
 }

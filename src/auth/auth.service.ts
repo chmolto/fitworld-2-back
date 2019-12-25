@@ -7,6 +7,7 @@ import { JwtPayload } from './jwt/jwt-payload.model';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
 import { User } from './entities/user.entity';
+import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
   async updateUser(
     updateCredentialsDto: UpdateCredentialsDto,
     user: User,
-  ): Promise<User> {
+  ): Promise<ReturnUpdatedUser> {
     return this.userRepository.updateUser(updateCredentialsDto, user);
   }
 }

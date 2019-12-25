@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
+import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -58,30 +59,29 @@ export class UserRepository extends Repository<User> {
   async updateUser(
     updateCredentialsDto: UpdateCredentialsDto,
     user: User,
-  ): Promise<User> {
-    updateCredentialsDto.username
+  ): Promise<ReturnUpdatedUser> {
+    updateCredentialsDto.username != null
       ? (user.username = updateCredentialsDto.username)
       : null;
 
-    updateCredentialsDto.newPassword
+    updateCredentialsDto.password != null
       ? (user = await this.setNewPassword(updateCredentialsDto, user))
       : null;
 
-    updateCredentialsDto.height
+    updateCredentialsDto.height != null
       ? (user.height = updateCredentialsDto.height)
       : null;
 
-    updateCredentialsDto.username
+    updateCredentialsDto.weight != null
       ? (user.weight = updateCredentialsDto.weight)
       : null;
 
-    updateCredentialsDto.username
+    updateCredentialsDto.image != null
       ? (user.image = updateCredentialsDto.image)
       : null;
 
     user.save();
-    this.clearSensitiveInfoUser(user);
-    return user;
+    return this.clearSensitiveInfoUser(user);
   }
 
   private async setNewPassword(
@@ -90,7 +90,7 @@ export class UserRepository extends Repository<User> {
   ): Promise<User> {
     if (await user.validatePassword(updateCredentialsDto.oldPassword)) {
       user.password = await this.hashPassword(
-        updateCredentialsDto.newPassword,
+        updateCredentialsDto.password,
         user.salt,
       );
     } else {
@@ -103,9 +103,13 @@ export class UserRepository extends Repository<User> {
     return bcrypt.hash(password, salt);
   }
 
-  private clearSensitiveInfoUser(user:User){
-    user.password = null;
-    user.salt = null;
-    return user;
+  private clearSensitiveInfoUser(user: User): ReturnUpdatedUser {
+    let updatedUser: ReturnUpdatedUser = {
+      username: user.username,
+      height: user.height,
+      weight: user.weight,
+      image: user.image,
+    };
+    return updatedUser;
   }
 }
