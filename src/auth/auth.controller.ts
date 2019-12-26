@@ -9,10 +9,9 @@ import {
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from './entities/user.entity';
+import { User } from './user.entity';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
-import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -35,7 +34,7 @@ export class AuthController {
   public updateUser(
     @GetUser() user: User,
     @Body(ValidationPipe) updateCredentialsDto: UpdateCredentialsDto,
-  ): Promise<ReturnUpdatedUser> {
+  ): Promise<User> {
     return this.authService.updateUser(updateCredentialsDto, user);
   }
 }

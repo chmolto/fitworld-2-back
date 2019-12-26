@@ -6,8 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt/jwt-payload.model';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
-import { User } from './entities/user.entity';
-import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
+import { User } from './user.entity';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +40,7 @@ export class AuthService {
   async updateUser(
     updateCredentialsDto: UpdateCredentialsDto,
     user: User,
-  ): Promise<ReturnUpdatedUser> {
+  ): Promise<User> {
     return this.userRepository.updateUser(updateCredentialsDto, user);
   }
 }

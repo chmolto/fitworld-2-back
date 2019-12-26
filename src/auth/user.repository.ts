@@ -1,5 +1,5 @@
 import { Repository, EntityRepository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User } from './user.entity';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ErrorConstants } from '../constants/error-constants';
 import * as bcrypt from 'bcrypt';
@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { LoginCredentialsDto } from './dtos/login-credentials.dto';
 import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
-import { ReturnUpdatedUser } from './dtos/return-updated-user.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -49,7 +48,8 @@ export class UserRepository extends Repository<User> {
     }
 
     if (user && (await user.validatePassword(password))) {
-      this.clearSensitiveInfoUser(user);
+      delete user.salt;
+      delete user.password;
       return user;
     } else {
       return null;
@@ -59,7 +59,7 @@ export class UserRepository extends Repository<User> {
   async updateUser(
     updateCredentialsDto: UpdateCredentialsDto,
     user: User,
-  ): Promise<ReturnUpdatedUser> {
+  ): Promise<User> {
     updateCredentialsDto.username != null
       ? (user.username = updateCredentialsDto.username)
       : null;
@@ -81,7 +81,9 @@ export class UserRepository extends Repository<User> {
       : null;
 
     user.save();
-    return this.clearSensitiveInfoUser(user);
+    delete user.salt;
+    delete user.password;
+    return user;
   }
 
   private async setNewPassword(
@@ -101,15 +103,5 @@ export class UserRepository extends Repository<User> {
 
   private async hashPassword(password: string, salt: string) {
     return bcrypt.hash(password, salt);
-  }
-
-  private clearSensitiveInfoUser(user: User): ReturnUpdatedUser {
-    let updatedUser: ReturnUpdatedUser = {
-      username: user.username,
-      height: user.height,
-      weight: user.weight,
-      image: user.image,
-    };
-    return updatedUser;
   }
 }

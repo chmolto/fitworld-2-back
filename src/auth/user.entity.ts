@@ -5,7 +5,9 @@ import {
   Column,
   PrimaryGeneratedColumn,
   Unique,
+  OneToMany,
 } from 'typeorm';
+import { Routine } from '../routines/routines.entity';
 
 @Entity()
 @Unique(['username'])
@@ -40,6 +42,13 @@ export class User extends BaseEntity {
     nullable: true,
   })
   weight: number;
+
+  @OneToMany(
+    type => Routine,
+    routine => routine.user,
+    { eager: true },
+  )
+  routines: Routine[];
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
