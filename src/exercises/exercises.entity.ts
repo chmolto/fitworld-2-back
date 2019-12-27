@@ -15,16 +15,16 @@ export class Exercise extends BaseEntity {
   @Column('varchar', { length: 50 })
   name: string;
 
-  @Column('array')
+  @Column('varchar', { array: true })
   muscles: string[];
 
-  @Column('array')
-  antagosnits: string[];
+  @Column('varchar', { array: true })
+  antagonists: string[];
 
   constructor(name: string, muscles: string[], antagonists: string[]) {
     super();
     this.name = name;
     this.muscles = muscles;
-    this.antagosnits = antagonists;
+    this.antagonists = antagonists;
   }
 }
