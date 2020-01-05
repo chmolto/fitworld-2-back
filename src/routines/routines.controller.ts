@@ -1,4 +1,14 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Param,
+  ParseIntPipe,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { RoutinesService } from './routines.service';
 import { GetUser } from '../constants/decorators/get-user-decorator';
 import { User } from '../auth/user.entity';
@@ -17,5 +27,34 @@ export class RoutinesController {
     @GetUser() user: User,
   ): Promise<Routine> {
     return await this.routinesService.createRoutine(createRoutineDto, user);
+  }
+
+  @Get()
+  getRoutines(@GetUser() user: User): Promise<Routine[]> {
+    return this.routinesService.getRoutines(user);
+  }
+
+  @Get('/:id')
+  getRoutineById(
+    @GetUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Routine> {
+    return this.routinesService.getRoutineByID(user, id);
+  }
+
+  @Delete('/:id')
+  deleteRoutineById(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.routinesService.deleteRoutine(id, user);
+  }
+
+  @Patch('/:id')
+  setActiveRoutine(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<Routine> {
+    return this.routinesService.setActiveRoutine(id, user);
   }
 }

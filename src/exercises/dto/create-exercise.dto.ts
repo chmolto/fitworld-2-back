@@ -1,4 +1,5 @@
 import { IsString, MaxLength, IsArray } from 'class-validator';
+import { PrimaryGeneratedColumn } from 'typeorm';
 
 export class CreateExerciseDto {
   @IsString()
