@@ -1,5 +1,4 @@
 import { IsString, MaxLength, IsArray } from 'class-validator';
-import { Exercise } from '../../exercises/exercises.entity';
 
 export class CreateRoutineDto {
   @IsString()
@@ -7,5 +6,6 @@ export class CreateRoutineDto {
   name: string;
 
   @IsArray()
-  exercises: Exercise[];
+  @MaxLength(20)
+  exercisesId: number[];
 }
