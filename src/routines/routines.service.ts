@@ -84,7 +84,6 @@ export class RoutinesService {
     const routine = new Routine(
       id,
       routineDto.name,
-      new Date(),
       user,
       exerciseToRoutine,
       routineDto.active,

@@ -18,11 +18,9 @@ export class RoutineRepository extends Repository<Routine> {
     user: User,
   ): Promise<Routine> {
     const { name, active } = createRoutineDto;
-    const currentDate = new Date();
     const routine = new Routine(
       routineId,
       name,
-      currentDate,
       user,
       exercisesToRoutine,
       active,

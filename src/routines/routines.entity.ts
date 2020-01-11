@@ -10,6 +10,7 @@ import {
   JoinTable,
   OneToMany,
   PrimaryColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 
@@ -21,7 +22,7 @@ export class Routine extends BaseEntity {
   @Column('varchar', { length: 50 })
   name: string;
 
-  @Column('timestamptz')
+  @CreateDateColumn()
   creationDate: Date;
 
   @Column('boolean')
@@ -50,7 +51,6 @@ export class Routine extends BaseEntity {
   constructor(
     id: string,
     name: string,
-    creationDate: Date,
     user: User,
     exerciseToRoutine: ExerciseToRoutine[],
     active: boolean,
@@ -58,7 +58,6 @@ export class Routine extends BaseEntity {
     super();
     this.id = id;
     this.name = name;
-    this.creationDate = creationDate;
     this.user = user;
     this.exerciseToRoutine = exerciseToRoutine;
     this.active = active;
