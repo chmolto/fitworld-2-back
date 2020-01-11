@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Delete,
   Patch,
+  Put,
 } from '@nestjs/common';
 import { RoutinesService } from './routines.service';
 import { GetUser } from '../constants/decorators/get-user-decorator';
@@ -37,22 +38,31 @@ export class RoutinesController {
   @Get('/:id')
   getRoutineById(
     @GetUser() user: User,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
   ): Promise<Routine> {
     return this.routinesService.getRoutineByID(user, id);
   }
 
   @Delete('/:id')
   deleteRoutineById(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @GetUser() user: User,
   ): Promise<void> {
     return this.routinesService.deleteRoutine(id, user);
   }
 
+  @Put('/:id')
+  updateRoutine(
+    @Body() routineDto: CreateRoutineDto,
+    @GetUser() user: User,
+    @Param('id') id: string,
+  ) {
+    this.routinesService.updateRoutine(user, routineDto, id);
+  }
+
   @Patch('/:id')
   setActiveRoutine(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @GetUser() user: User,
   ): Promise<Routine> {
     return this.routinesService.setActiveRoutine(id, user);

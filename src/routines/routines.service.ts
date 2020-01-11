@@ -1,3 +1,4 @@
+import { IdGeneratorService } from './../services/id-generator.service';
 import { ExerciseRepository } from './../exercises/exercises.repository';
 import {
   Injectable,
@@ -6,11 +7,16 @@ import {
 } from '@nestjs/common';
 import { RoutineRepository } from './routines.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateRoutineDto } from './dto/create-routine.dto';
-import { User } from 'src/auth/user.entity';
+import {
+  CreateRoutineDto,
+  ExerciseRoutineModel,
+} from './dto/create-routine.dto';
+import { User } from '../auth/user.entity';
 import { Routine } from './routines.entity';
-import { Exercise } from 'src/exercises/exercises.entity';
-import { uniq } from 'lodash';
+import { Exercise } from '../exercises/exercises.entity';
+import { uniqBy } from 'lodash';
+import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
+import { ExerciseToRoutineRepository } from '../exercise-routine/exercise-routine.repository';
 
 @Injectable()
 export class RoutinesService {
@@ -19,25 +25,28 @@ export class RoutinesService {
     private routineRepository: RoutineRepository,
     @InjectRepository(ExerciseRepository)
     private exerciseRepository: ExerciseRepository,
+    @InjectRepository(ExerciseToRoutineRepository)
+    private exerciseToRoutineRepository: ExerciseToRoutineRepository,
+    private idGeneratorService: IdGeneratorService,
   ) {}
 
   public async createRoutine(
     createRoutineDto: CreateRoutineDto,
     user: User,
   ): Promise<Routine> {
-    const { exercisesId } = createRoutineDto;
-    const exercises: Exercise[] = [];
-    uniq(exercisesId).forEach(async exerciseId => {
-      const exercise = await this.exerciseRepository.findOne({
-        id: exerciseId,
-      });
-      if (exercise) {
-        exercises.push(exercise);
-      }
-    });
-    return await this.routineRepository.createRoutine(
-      createRoutineDto,
+    const routineId: string = await this.idGeneratorService.generateUniqId(
+      this.routineRepository,
+    );
+    const { exercises } = createRoutineDto;
+    const exercisesToRoutine = await this.getCleanExercises(
       exercises,
+      routineId,
+    );
+
+    return await this.routineRepository.createRoutine(
+      routineId,
+      createRoutineDto,
+      exercisesToRoutine,
       user,
     );
   }
@@ -46,11 +55,11 @@ export class RoutinesService {
     return await this.routineRepository.getRoutines(user);
   }
 
-  public async getRoutineByID(user: User, id: number): Promise<Routine> {
+  public async getRoutineByID(user: User, id: string): Promise<Routine> {
     return await this.routineRepository.getRoutineByID(user, id);
   }
 
-  async deleteRoutine(id: number, user: User): Promise<void> {
+  async deleteRoutine(id: string, user: User): Promise<void> {
     const routine = await this.routineRepository.findOne({
       id,
       userId: user.id,
@@ -66,11 +75,56 @@ export class RoutinesService {
     }
   }
 
-  async setActiveRoutine(id: number, user: User): Promise<Routine> {
-    return await this.routineRepository.setActiveRoutine(user, id);
+  async updateRoutine(user: User, routineDto: CreateRoutineDto, id: string) {
+    await this.exerciseToRoutineRepository.delete({ routineId: id });
+    const exerciseToRoutine: ExerciseToRoutine[] = await this.getCleanExercises(
+      routineDto.exercises,
+      id,
+    );
+    const routine = new Routine(
+      id,
+      routineDto.name,
+      new Date(),
+      user,
+      exerciseToRoutine,
+      routineDto.active,
+    );
+    this.routineRepository.updateRoutine(user, routine);
   }
 
-  async getExercise(id: number) {
-    return await this.exerciseRepository.findOne({ id });
+  async setActiveRoutine(id: string, user: User): Promise<Routine> {
+    return await this.routineRepository.updateActivateRoutine(user, id);
+  }
+
+  private async getCleanExercises(
+    exercises: ExerciseRoutineModel[],
+    routineId: string,
+  ): Promise<ExerciseToRoutine[]> {
+    const exercisesNoRepeated: ExerciseRoutineModel[] = uniqBy(
+      exercises,
+      'exerciseId',
+    );
+    return await this.getExercises(exercisesNoRepeated, routineId);
+  }
+
+  private async getExercises(
+    allExercisesToRoutine: ExerciseRoutineModel[],
+    routineId: string,
+  ) {
+    const exercisesToRoutine: ExerciseToRoutine[] = [];
+    for (let i = 0; i < allExercisesToRoutine.length; i++) {
+      const exercise = await this.exerciseRepository.findOne({
+        id: allExercisesToRoutine[i].exerciseId,
+      });
+      if (exercise) {
+        const exerciseToRoutine = new ExerciseToRoutine(
+          allExercisesToRoutine[i].day,
+          routineId,
+          exercise.id,
+        );
+        exercisesToRoutine.push(exerciseToRoutine);
+      }
+    }
+    return exercisesToRoutine;
   }
 }

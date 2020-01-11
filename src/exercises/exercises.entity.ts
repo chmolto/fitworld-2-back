@@ -1,3 +1,4 @@
+import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 import { User } from '../auth/user.entity';
 import {
   BaseEntity,
@@ -5,6 +6,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -20,6 +23,12 @@ export class Exercise extends BaseEntity {
 
   @Column('varchar', { array: true })
   antagonists: string[];
+
+  @OneToMany(
+    type => ExerciseToRoutine,
+    exerciseToRoutine => exerciseToRoutine.exerciseId,
+  )
+  public exerciseToRoutine: ExerciseToRoutine[];
 
   constructor(name: string, muscles: string[], antagonists: string[]) {
     super();

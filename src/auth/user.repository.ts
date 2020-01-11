@@ -2,7 +2,7 @@ import { Repository, EntityRepository } from 'typeorm';
 import { User } from './user.entity';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ErrorConstants } from '../constants/error-constants';
-import * as bcrypt from 'bcrypt';
+import { hash, genSalt } from 'bcrypt';
 
 import {
   ConflictException,
@@ -18,12 +18,11 @@ export class UserRepository extends Repository<User> {
     const user = new User();
     user.username = username;
     user.email = email;
-    user.salt = await bcrypt.genSalt();
+    user.salt = await genSalt();
     user.password = await this.hashPassword(password, user.salt);
     try {
       await user.save();
     } catch (error) {
-      console.log(error);
       if (error.code == ErrorConstants.ERROR_UNIQUE_COLUMN) {
         if (error.detail.includes('(username)')) {
           throw new ConflictException('Username already exists');
@@ -50,6 +49,7 @@ export class UserRepository extends Repository<User> {
     if (user && (await user.validatePassword(password))) {
       delete user.salt;
       delete user.password;
+      delete user.routines;
       return user;
     } else {
       return null;
@@ -102,6 +102,6 @@ export class UserRepository extends Repository<User> {
   }
 
   private async hashPassword(password: string, salt: string) {
-    return bcrypt.hash(password, salt);
+    return hash(password, salt);
   }
 }

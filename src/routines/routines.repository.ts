@@ -1,25 +1,32 @@
-import { ExerciseRepository } from './../exercises/exercises.repository';
 import { EntityRepository, Repository } from 'typeorm';
 import { Routine } from './routines.entity';
 import { CreateRoutineDto } from './dto/create-routine.dto';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { find } from 'lodash';
-import { Exercise } from 'src/exercises/exercises.entity';
+import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 
 @EntityRepository(Routine)
 export class RoutineRepository extends Repository<Routine> {
   public async createRoutine(
+    routineId: string,
     createRoutineDto: CreateRoutineDto,
-    exercises: Exercise[],
+    exercisesToRoutine: ExerciseToRoutine[],
     user: User,
   ): Promise<Routine> {
-    const { name } = createRoutineDto;
+    const { name, active } = createRoutineDto;
     const currentDate = new Date();
-    const routine = new Routine(name, currentDate, user, exercises, false);
+    const routine = new Routine(
+      routineId,
+      name,
+      currentDate,
+      user,
+      exercisesToRoutine,
+      active,
+    );
     await this.trySaveRoutine(routine);
     delete routine.user;
     return routine;
@@ -31,28 +38,35 @@ export class RoutineRepository extends Repository<Routine> {
     });
   }
 
-  public async getRoutineByID(user: User, id: number): Promise<Routine> {
+  public async getRoutineByID(user: User, id: string): Promise<any> {
     return await this.findOne({
       where: { id, userId: user.id },
     });
   }
 
-  async setActiveRoutine(user: User, id: number): Promise<Routine> {
+  async activateRoutine(user: User, id: string): Promise<Routine> {
     const routines = await this.find({ userId: user.id });
     const newActiveRoutine: Routine = find(routines, { id });
     const currentActiveRoutine: Routine = find(routines, { active: true });
     if (currentActiveRoutine) {
-      currentActiveRoutine.active = false;
-      await this.trySaveRoutine(currentActiveRoutine);
+      if (currentActiveRoutine.id != id) {
+        currentActiveRoutine.active = false;
+        await this.trySaveRoutine(currentActiveRoutine);
+      }
     }
     if (newActiveRoutine) {
       newActiveRoutine.active = true;
-      await this.trySaveRoutine(newActiveRoutine);
-      delete newActiveRoutine.user;
       return newActiveRoutine;
     } else {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
+  }
+
+  async updateActivateRoutine(user: User, id: string) {
+    const routine = await this.activateRoutine(user, id);
+    this.trySaveRoutine(routine);
+    delete routine.user;
+    return routine;
   }
 
   private async trySaveRoutine(routine: Routine) {
@@ -60,6 +74,19 @@ export class RoutineRepository extends Repository<Routine> {
       await routine.save();
     } catch (error) {
       throw new InternalServerErrorException(error);
+    }
+  }
+
+  async updateRoutine(user: User, routine: Routine) {
+    const routineDB = await this.findOne({ id: routine.id });
+    if (routineDB) {
+      if (routine.active) {
+        await this.activateRoutine(user, routine.id);
+      }
+      routine.creationDate = routineDB.creationDate;
+      this.trySaveRoutine(routine);
+    } else {
+      throw new NotFoundException();
     }
   }
 }

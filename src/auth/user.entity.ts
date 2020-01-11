@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import { hash } from 'bcrypt';
 import {
   Entity,
   BaseEntity,
@@ -51,7 +51,7 @@ export class User extends BaseEntity {
   routines: Routine[];
 
   async validatePassword(password: string): Promise<boolean> {
-    const hash = await bcrypt.hash(password, this.salt);
-    return hash === this.password;
+    const hashCode = await hash(password, this.salt);
+    return hashCode === this.password;
   }
 }

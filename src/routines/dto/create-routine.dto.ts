@@ -1,4 +1,4 @@
-import { IsString, MaxLength, IsArray } from 'class-validator';
+import { IsString, MaxLength, IsArray, IsBoolean } from 'class-validator';
 
 export class CreateRoutineDto {
   @IsString()
@@ -7,5 +7,13 @@ export class CreateRoutineDto {
 
   @IsArray()
   @MaxLength(20)
-  exercisesId: number[];
+  exercises: ExerciseRoutineModel[];
+
+  @IsBoolean()
+  active: boolean;
+}
+
+export interface ExerciseRoutineModel {
+  exerciseId: number;
+  day: number;
 }

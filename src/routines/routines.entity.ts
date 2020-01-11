@@ -8,12 +8,15 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  OneToMany,
+  PrimaryColumn,
 } from 'typeorm';
+import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 
 @Entity()
 export class Routine extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn()
+  id: string;
 
   @Column('varchar', { length: 50 })
   name: string;
@@ -34,22 +37,30 @@ export class Routine extends BaseEntity {
   @Column()
   userId: number;
 
-  @ManyToMany(type => Exercise)
-  @JoinTable()
-  exercises: Exercise[];
+  @OneToMany(
+    type => ExerciseToRoutine,
+    exerciseToRoutine => exerciseToRoutine.routineId,
+    {
+      cascade: true,
+      eager: true,
+    },
+  )
+  public exerciseToRoutine: ExerciseToRoutine[];
 
   constructor(
+    id: string,
     name: string,
     creationDate: Date,
     user: User,
-    exercises: Exercise[],
-    active: boolean
+    exerciseToRoutine: ExerciseToRoutine[],
+    active: boolean,
   ) {
     super();
+    this.id = id;
     this.name = name;
     this.creationDate = creationDate;
     this.user = user;
-    this.exercises = exercises;
+    this.exerciseToRoutine = exerciseToRoutine;
     this.active = active;
   }
 }
