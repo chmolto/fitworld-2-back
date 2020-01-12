@@ -23,11 +23,11 @@ export class RoutinesController {
   constructor(private routinesService: RoutinesService) {}
 
   @Post()
-  public async createRoutine(
+  createRoutine(
     @Body() createRoutineDto: CreateRoutineDto,
     @GetUser() user: User,
   ): Promise<Routine> {
-    return await this.routinesService.createRoutine(createRoutineDto, user);
+    return this.routinesService.createRoutine(createRoutineDto, user);
   }
 
   @Get()

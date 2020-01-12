@@ -1,42 +1,73 @@
-/* import {
+import { Exercise } from '../exercises/exercises.entity';
+import { Routine } from '../routines/routines.entity';
+import {
   Entity,
   BaseEntity,
-  PrimaryColumn,
   Column,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
 } from 'typeorm';
-import { User } from 'src/auth/user.entity';
-import { ExerciseToRoutine } from 'src/exercise-routine/exercise-routine.entity';
 
 @Entity()
-export class Routine extends BaseEntity {
-    
+export class Sets extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-
-
-  @Column('timestamptz')
-  creationDate: Date;
-
-  @Column('boolean')
-  active: boolean;
-
-  @ManyToOne(
-    type => User,
-    user => user.routines,
-    { eager: false },
-  )
-  user: User;
+  workoutId: string;
 
   @Column()
   userId: number;
 
-  constructor() {
+  @CreateDateColumn()
+  creationDate: Date;
+
+  @Column()
+  order: number;
+
+  @Column()
+  quantity: number;
+
+  @Column()
+  repetitions: number;
+
+  @Column()
+  weight: number;
+
+  @ManyToOne(
+    type => Exercise,
+    exercise => exercise.set,
+    { eager: true },
+  )
+  exercise: Exercise;
+
+  @ManyToOne(
+    type => Routine,
+    routine => routine.sets,
+  )
+  routineId: string;
+
+  constructor(
+    workoutId: string,
+    routineId: string,
+    userId: number,
+    creationDate: Date,
+    order: number,
+    quantity: number,
+    repetitions: number,
+    weight: number,
+    exercise: Exercise,
+  ) {
     super();
+    this.workoutId = workoutId;
+    this.routineId = routineId;
+    this.userId = userId;
+    this.creationDate = creationDate;
+    this.order = order;
+    this.quantity = quantity;
+    this.repetitions = repetitions;
+    this.weight = weight;
+    this.exercise = exercise;
   }
 }
- */

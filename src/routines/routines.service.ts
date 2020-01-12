@@ -1,4 +1,4 @@
-import { IdGeneratorService } from './../services/id-generator.service';
+import { ToolsService } from '../services/tools.service';
 import { ExerciseRepository } from './../exercises/exercises.repository';
 import {
   Injectable,
@@ -27,14 +27,14 @@ export class RoutinesService {
     private exerciseRepository: ExerciseRepository,
     @InjectRepository(ExerciseToRoutineRepository)
     private exerciseToRoutineRepository: ExerciseToRoutineRepository,
-    private idGeneratorService: IdGeneratorService,
+    private toolsService: ToolsService,
   ) {}
 
   public async createRoutine(
     createRoutineDto: CreateRoutineDto,
     user: User,
   ): Promise<Routine> {
-    const routineId: string = await this.idGeneratorService.generateUniqId(
+    const routineId: string = await this.toolsService.generateUniqId(
       this.routineRepository,
     );
     const { exercises } = createRoutineDto;

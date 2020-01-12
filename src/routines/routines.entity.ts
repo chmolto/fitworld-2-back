@@ -13,6 +13,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
+import { Sets } from '../sets/sets.entity';
 
 @Entity()
 export class Routine extends BaseEntity {
@@ -47,6 +48,12 @@ export class Routine extends BaseEntity {
     },
   )
   public exerciseToRoutine: ExerciseToRoutine[];
+
+  @OneToMany(
+    type => Sets,
+    sets => sets.routineId,
+  )
+  public sets: Sets;
 
   constructor(
     id: string,

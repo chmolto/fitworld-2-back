@@ -6,7 +6,7 @@ import { RoutinesService } from './routines.service';
 import { RoutineRepository } from './routines.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
-import { IdGeneratorService } from '../services/id-generator.service';
+import { ToolsService } from '../services/tools.service';
 
 @Module({
   imports: [
@@ -18,6 +18,6 @@ import { IdGeneratorService } from '../services/id-generator.service';
     AuthModule,
   ],
   controllers: [RoutinesController],
-  providers: [RoutinesService, IdGeneratorService],
+  providers: [RoutinesService, ToolsService],
 })
 export class RoutinesModule {}

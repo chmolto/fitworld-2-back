@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 @Injectable()
-export class IdGeneratorService {
+export class ToolsService {
   constructor() {}
 
-  public async generateUniqId(repository: any): Promise<string> {
+  public async generateUniqId(repository: any, id: any): Promise<string> {
     while (true) {
+      //VAINA LOCA CUSTOM ID
       const uniqId: string = this.uuidGenerator();
       const check = await repository.find({
         where: { id: uniqId },
@@ -18,9 +19,17 @@ export class IdGeneratorService {
 
   public uuidGenerator(): string {
     return 'xxxxxxxx'.replace(/[xy]/g, c => {
-      var r = (Math.random() * 16) | 0,
+      const r = (Math.random() * 16) | 0,
         v = c == 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
+  }
+
+  public async trySave(entity) {
+    try {
+      await entity.save();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 }
