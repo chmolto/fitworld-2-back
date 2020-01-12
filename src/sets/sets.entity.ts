@@ -20,7 +20,7 @@ export class Sets extends BaseEntity {
   @Column()
   userId: number;
 
-  @CreateDateColumn()
+  @Column("timestamptz")
   creationDate: Date;
 
   @Column()

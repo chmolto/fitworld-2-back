@@ -1,9 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SetsRepository } from './sets.repository';
 import { RegisterWorkoutDto } from './dto/register-workout.dto';
 import { User } from '../auth/user.entity';
-import { threadId } from 'worker_threads';
 import { Sets } from './sets.entity';
 import { ExerciseRepository } from '../exercises/exercises.repository';
 import { ToolsService } from '../services/tools.service';
@@ -24,8 +23,11 @@ export class SetsService {
     routineId: string,
   ): Promise<void> {
     const date = new Date();
+    const uuid = await this.toolsService.generateUniqId(
+      this.setsRepository,
+      'workoutId',
+    );
     for (let i = 0; i < workoutDto.length; i++) {
-      const uuid = await this.toolsService.generateUniqId(this.setsRepository);
       const exercise = await this.exerciseRepository.findOne({
         id: workoutDto[i].exerciseId,
       });
@@ -45,6 +47,9 @@ export class SetsService {
   }
 
   async getWorkoutById(workoutId: string, user: User): Promise<Sets[]> {
-    return await this.setsRepository.getWorkoutById(workoutId, user);
+    return await this.setsRepository.find({
+      workoutId,
+      userId: user.id,
+    });
   }
 }

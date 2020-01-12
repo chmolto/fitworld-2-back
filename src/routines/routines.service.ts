@@ -17,6 +17,7 @@ import { Exercise } from '../exercises/exercises.entity';
 import { uniqBy } from 'lodash';
 import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 import { ExerciseToRoutineRepository } from '../exercise-routine/exercise-routine.repository';
+import { find } from 'lodash';
 
 @Injectable()
 export class RoutinesService {
@@ -37,26 +38,33 @@ export class RoutinesService {
     const routineId: string = await this.toolsService.generateUniqId(
       this.routineRepository,
     );
-    const { exercises } = createRoutineDto;
+    const { exercises, name, active } = createRoutineDto;
     const exercisesToRoutine = await this.getCleanExercises(
       exercises,
       routineId,
     );
-
-    return await this.routineRepository.createRoutine(
+    const routine = new Routine(
       routineId,
-      createRoutineDto,
-      exercisesToRoutine,
+      name,
       user,
+      exercisesToRoutine,
+      active,
     );
+    await this.toolsService.trySave(routine);
+    delete routine.user;
+    return routine;
   }
 
   public async getRoutines(user: User): Promise<Routine[]> {
-    return await this.routineRepository.getRoutines(user);
+    return await this.routineRepository.find({
+      where: { userId: user.id },
+    });
   }
 
   public async getRoutineByID(user: User, id: string): Promise<Routine> {
-    return await this.routineRepository.getRoutineByID(user, id);
+    return await this.routineRepository.findOne({
+      where: { id, userId: user.id },
+    });
   }
 
   async deleteRoutine(id: string, user: User): Promise<void> {
@@ -88,11 +96,41 @@ export class RoutinesService {
       exerciseToRoutine,
       routineDto.active,
     );
-    this.routineRepository.updateRoutine(user, routine);
+    const routineDB = await this.routineRepository.findOne({ id: routine.id });
+    if (routineDB) {
+      if (routine.active) {
+        await this.activateRoutine(user, routine.id);
+      }
+      routine.creationDate = routineDB.creationDate;
+      await this.toolsService.trySave(routine);
+    } else {
+      throw new NotFoundException();
+    }
+  }
+
+  async activateRoutine(user: User, id: string): Promise<Routine> {
+    const routines = await this.routineRepository.find({ userId: user.id });
+    const newActive: Routine = find(routines, { id });
+    const current: Routine = find(routines, { active: true });
+    if (current) {
+      if (current.id != id) {
+        current.active = false;
+        await this.toolsService.trySave(current);
+      }
+    }
+    if (newActive) {
+      newActive.active = true;
+      return newActive;
+    } else {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
   }
 
   async setActiveRoutine(id: string, user: User): Promise<Routine> {
-    return await this.routineRepository.updateActivateRoutine(user, id);
+    const routine = await this.activateRoutine(user, id);
+    await this.toolsService.trySave(routine);
+    delete routine.user;
+    return routine;
   }
 
   private async getCleanExercises(

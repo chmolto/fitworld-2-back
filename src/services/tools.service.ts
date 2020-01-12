@@ -1,15 +1,30 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  ConflictException,
+} from '@nestjs/common';
+import { ErrorConstants } from '../constants/error-constants';
+
+export interface LooseObject {
+  [key: string]: any;
+}
 
 @Injectable()
 export class ToolsService {
   constructor() {}
 
-  public async generateUniqId(repository: any, id: any): Promise<string> {
+  public async generateUniqId(repository: any, id?: any): Promise<string> {
     while (true) {
-      //VAINA LOCA CUSTOM ID
+      let searchObj: LooseObject;
       const uniqId: string = this.uuidGenerator();
+
+      // Search for custom id field
+      if (id) {
+        searchObj = { [id]: uniqId };
+      }
+
       const check = await repository.find({
-        where: { id: uniqId },
+        where: id ? searchObj : { id: uniqId },
       });
       if (check.length == 0) {
         return uniqId;
@@ -29,7 +44,16 @@ export class ToolsService {
     try {
       await entity.save();
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      if (error.code == ErrorConstants.ERROR_UNIQUE_COLUMN) {
+        if (error.detail.includes('(username)')) {
+          throw new ConflictException('Username already exists');
+        }
+        if (error.detail.includes('(email)')) {
+          throw new ConflictException('Email already exists');
+        }
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 }
