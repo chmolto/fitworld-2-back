@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SetsRepository } from './sets.repository';
 import { RegisterWorkoutDto } from './dto/register-workout.dto';
@@ -6,6 +6,7 @@ import { User } from '../auth/user.entity';
 import { Sets } from './sets.entity';
 import { ExerciseRepository } from '../exercises/exercises.repository';
 import { ToolsService } from '../services/tools.service';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class SetsService {
@@ -22,7 +23,6 @@ export class SetsService {
     user: User,
     routineId: string,
   ): Promise<void> {
-    const date = new Date();
     const uuid = await this.toolsService.generateUniqId(
       this.setsRepository,
       'workoutId',
@@ -31,6 +31,7 @@ export class SetsService {
       const exercise = await this.exerciseRepository.findOne({
         id: workoutDto[i].exerciseId,
       });
+      const date = workoutDto[i].date ? workoutDto[i].date : new Date();
       const sets = new Sets(
         uuid,
         routineId,
@@ -51,5 +52,25 @@ export class SetsService {
       workoutId,
       userId: user.id,
     });
+  }
+
+  async deleteWorkoutById(workoutId: string, user: User): Promise<void> {
+    const result = await this.setsRepository.delete({
+      workoutId,
+      userId: user.id,
+    });
+    if (result.affected === 0) {
+      throw new NotFoundException(`Workout with ID ${workoutId} not found`);
+    }
+  }
+
+  async deleteSetById(id: number, user: User): Promise<void> {
+    const result = await this.setsRepository.delete({
+      id,
+      userId: user.id,
+    });
+    if (result.affected === 0) {
+      throw new NotFoundException(`Set with ID ${id} not found`);
+    }
   }
 }

@@ -6,12 +6,14 @@ import {
   Param,
   Body,
   Get,
+  Delete,
 } from '@nestjs/common/decorators';
 import { AuthGuard } from '@nestjs/passport';
 import { SetsService } from './sets.service';
 import { GetUser } from '../constants/decorators/get-user-decorator';
 import { User } from '../auth/user.entity';
 import { Sets } from './sets.entity';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('sets')
 @UseGuards(AuthGuard())
@@ -29,9 +31,25 @@ export class SetsController {
 
   @Get('/:id')
   getWorkout(
-    @Param('id') routineId: string,
+    @Param('id') workoutId: string,
     @GetUser() user: User,
   ): Promise<Sets[]> {
-    return this.setsService.getWorkoutById(routineId, user);
+    return this.setsService.getWorkoutById(workoutId, user);
+  }
+
+  @Delete('/:id')
+  deleteWorkout(
+    @Param('id') workoutId: string,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.setsService.deleteWorkoutById(workoutId, user);
+  }
+
+  @Delete('set/:id')
+  deleteSet(
+    @Param('id', ParseIntPipe) setId: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.setsService.deleteSetById(setId, user);
   }
 }

@@ -5,6 +5,9 @@ import {
   Matches,
   IsNumber,
   IsOptional,
+  IsBase64,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class UpdateCredentialsDto {
@@ -32,15 +35,14 @@ export class UpdateCredentialsDto {
   })
   oldPassword: string;
 
+  @Max(3)
+  @Min(1)
   @IsOptional()
   @IsNumber()
   height: number;
 
   @IsOptional()
-  @IsNumber()
-  weight: number;
-
-  @IsOptional()
   @IsString()
+  @IsBase64()
   image: string;
 }

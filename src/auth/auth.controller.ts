@@ -5,6 +5,7 @@ import {
   Body,
   ValidationPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { AuthService } from './auth.service';
@@ -36,5 +37,10 @@ export class AuthController {
     @Body(ValidationPipe) updateCredentialsDto: UpdateCredentialsDto,
   ): Promise<User> {
     return this.authService.updateUser(updateCredentialsDto, user);
+  }
+
+  @Post('/captcha')
+  public checkCaptcha(@Body() captcha: any) {
+    return this.authService.checkCaptcha(captcha.response);
   }
 }

@@ -1,4 +1,4 @@
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsDate, IsOptional, MaxDate } from 'class-validator';
 
 export class RegisterWorkoutDto {
   @IsNumber()
@@ -15,4 +15,10 @@ export class RegisterWorkoutDto {
 
   @IsNumber()
   exerciseId: number;
+
+  @IsDate()
+  @IsOptional()
+  // prevent insert in future dates
+  @MaxDate(new Date())
+  date: Date;
 }

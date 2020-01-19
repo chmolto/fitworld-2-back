@@ -76,7 +76,7 @@ export class RoutinesService {
       if (routine.active) {
         throw new UnauthorizedException(`Can't delete an active routine`);
       } else {
-        this.routineRepository.delete({ id, userId: user.id });
+        await this.routineRepository.delete({ id, userId: user.id });
       }
     } else {
       throw new NotFoundException(`Task with ID ${id} not found`);

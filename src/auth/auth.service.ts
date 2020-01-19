@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  HttpService,
 } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,9 @@ import { UpdateCredentialsDto } from './dtos/update-credentials.dto';
 import { User } from './user.entity';
 import { hash, genSalt } from 'bcrypt';
 import { ToolsService } from '../services/tools.service';
+import { GoogleTemporalKeys } from '../constants/google-temporal-keys';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +25,7 @@ export class AuthService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private toolsService: ToolsService,
+    private httpService: HttpService,
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
@@ -77,10 +82,6 @@ export class AuthService {
       ? (user.height = updateCredentialsDto.height)
       : null;
 
-    updateCredentialsDto.weight != null
-      ? (user.weight = updateCredentialsDto.weight)
-      : null;
-
     updateCredentialsDto.image != null
       ? (user.image = updateCredentialsDto.image)
       : null;
@@ -108,5 +109,14 @@ export class AuthService {
 
   private async hashPassword(password: string, salt: string) {
     return hash(password, salt);
+  }
+
+  public checkCaptcha(response: any) {
+    return this.httpService
+      .post(
+        GoogleTemporalKeys.googleVerificationSite +
+          `?secret=${GoogleTemporalKeys.captchaKey}&response=${response}`,
+      )
+      .pipe(map(googleResponse => googleResponse.data));
   }
 }

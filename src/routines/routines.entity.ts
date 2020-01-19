@@ -3,11 +3,8 @@ import { Exercise } from '../exercises/exercises.entity';
 import {
   BaseEntity,
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  ManyToMany,
-  JoinTable,
   OneToMany,
   PrimaryColumn,
   CreateDateColumn,

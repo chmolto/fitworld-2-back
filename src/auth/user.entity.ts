@@ -43,6 +43,17 @@ export class User extends BaseEntity {
   })
   weight: number;
 
+  // 1 to 5
+  @Column({
+    nullable: true,
+  })
+  level: number;
+
+  @Column({
+    nullable: true,
+  })
+  metricUnits: boolean;
+
   @OneToMany(
     type => Routine,
     routine => routine.user,
