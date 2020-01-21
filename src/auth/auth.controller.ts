@@ -38,9 +38,4 @@ export class AuthController {
   ): Promise<User> {
     return this.authService.updateUser(updateCredentialsDto, user);
   }
-
-  @Post('/captcha')
-  public checkCaptcha(@Body() captcha: any) {
-    return this.authService.checkCaptcha(captcha.response);
-  }
 }

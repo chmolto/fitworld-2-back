@@ -29,13 +29,19 @@ export class AuthService {
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { username, password, email } = authCredentialsDto;
-    const user = new User();
-    user.username = username;
-    user.email = email;
-    user.salt = await genSalt();
-    user.password = await this.hashPassword(password, user.salt);
-    await this.toolsService.trySave(user);
+    const { username, password, email, captcha } = authCredentialsDto;
+    this.checkCaptcha(captcha).subscribe(async response => {
+      if (response.success) {
+        const user = new User();
+        user.username = username;
+        user.email = email;
+        user.salt = await genSalt();
+        user.password = await this.hashPassword(password, user.salt);
+        await this.toolsService.trySave(user);
+      } else {
+        throw new UnauthorizedException("Captcha couldn't be verified");
+      }
+    });
   }
 
   async signIn(
@@ -111,7 +117,7 @@ export class AuthService {
     return hash(password, salt);
   }
 
-  public checkCaptcha(response: any) {
+  private checkCaptcha(response: string): Observable<any> {
     return this.httpService
       .post(
         GoogleTemporalKeys.googleVerificationSite +

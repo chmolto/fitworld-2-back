@@ -29,4 +29,6 @@ export class AuthCredentialsDto {
     message: 'Invalid email',
   })
   email: string;
+
+  captcha: string;
 }

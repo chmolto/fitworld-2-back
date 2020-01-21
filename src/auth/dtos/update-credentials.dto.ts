@@ -43,6 +43,5 @@ export class UpdateCredentialsDto {
 
   @IsOptional()
   @IsString()
-  @IsBase64()
   image: string;
 }

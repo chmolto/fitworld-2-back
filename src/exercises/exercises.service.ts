@@ -4,10 +4,15 @@ import { CreateExerciseDto } from './dto/create-exercise.dto';
 import { Exercise } from './exercises.entity';
 import { ExerciseRepository } from './exercises.repository';
 import { ToolsService } from '../services/tools.service';
+import { from, Observable } from 'rxjs';
 
 @Injectable()
 export class ExercisesService {
-  constructor(private toolsService: ToolsService) {}
+  constructor(
+    @InjectRepository(ExerciseRepository)
+    private exerciseRepository: ExerciseRepository,
+    private toolsService: ToolsService,
+  ) {}
 
   public async createExercise(
     createExerciseDto: CreateExerciseDto,
@@ -16,5 +21,9 @@ export class ExercisesService {
     const exercise = new Exercise(name, muscles, antagonists);
     await this.toolsService.trySave(exercise);
     return exercise;
+  }
+
+  public getAllExercises(): Observable<Exercise[]> {
+    return from(this.exerciseRepository.find());
   }
 }
