@@ -8,8 +8,15 @@ import {
   Column,
   ManyToOne,
   OneToMany,
-  JoinColumn,
 } from 'typeorm';
+
+export type MuscleGroups =
+  | 'Chest'
+  | 'Back'
+  | 'Legs'
+  | 'Arms'
+  | 'Shoulders'
+  | 'Abs';
 
 @Entity()
 export class Exercise extends BaseEntity {
@@ -20,6 +27,9 @@ export class Exercise extends BaseEntity {
   name: string;
 
   @Column('varchar', { array: true })
+  muscleGroup: MuscleGroups[];
+
+  @Column('varchar', { array: true })
   muscles: string[];
 
   @Column('varchar', { array: true })
@@ -27,7 +37,7 @@ export class Exercise extends BaseEntity {
 
   @OneToMany(
     type => ExerciseToRoutine,
-    exerciseToRoutine => exerciseToRoutine.exerciseId,
+    exerciseToRoutine => exerciseToRoutine.exercise,
   )
   public exerciseToRoutine: ExerciseToRoutine[];
 
@@ -37,9 +47,15 @@ export class Exercise extends BaseEntity {
   )
   public set: Sets;
 
-  constructor(name: string, muscles: string[], antagonists: string[]) {
+  constructor(
+    name: string,
+    muscleGroup: MuscleGroups[],
+    muscles: string[],
+    antagonists: string[],
+  ) {
     super();
     this.name = name;
+    this.muscleGroup = muscleGroup;
     this.muscles = muscles;
     this.antagonists = antagonists;
   }

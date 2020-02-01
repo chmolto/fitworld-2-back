@@ -52,7 +52,7 @@ export class ToolsService {
           throw new ConflictException('Email already exists');
         }
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(error);
       }
     }
   }

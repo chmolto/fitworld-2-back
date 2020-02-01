@@ -17,8 +17,8 @@ export class ExercisesService {
   public async createExercise(
     createExerciseDto: CreateExerciseDto,
   ): Promise<Exercise> {
-    const { name, muscles, antagonists } = createExerciseDto;
-    const exercise = new Exercise(name, muscles, antagonists);
+    const { name, muscleGroups, muscles, antagonists } = createExerciseDto;
+    const exercise = new Exercise(name, muscleGroups, muscles, antagonists);
     await this.toolsService.trySave(exercise);
     return exercise;
   }

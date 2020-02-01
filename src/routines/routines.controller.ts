@@ -16,6 +16,7 @@ import { User } from '../auth/user.entity';
 import { Routine } from './routines.entity';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs';
 
 @Controller('routines')
 @UseGuards(AuthGuard())
@@ -39,15 +40,12 @@ export class RoutinesController {
   getRoutineById(
     @GetUser() user: User,
     @Param('id') id: string,
-  ): Promise<Routine> {
+  ): Observable<Routine> {
     return this.routinesService.getRoutineByID(user, id);
   }
 
   @Delete('/:id')
-  deleteRoutineById(
-    @Param('id') id: string,
-    @GetUser() user: User,
-  ): Promise<void> {
+  deleteRoutineById(@Param('id') id: string, @GetUser() user: User) {
     return this.routinesService.deleteRoutine(id, user);
   }
 

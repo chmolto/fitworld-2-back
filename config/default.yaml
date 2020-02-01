@@ -7,4 +7,4 @@ db:
   database: 'fitworld'
 
 jwt:
-  expiresIn: 3600 
+  expiresIn: 7200 

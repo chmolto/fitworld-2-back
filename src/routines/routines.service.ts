@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { RoutineRepository } from './routines.repository';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,11 +14,11 @@ import {
 } from './dto/create-routine.dto';
 import { User } from '../auth/user.entity';
 import { Routine } from './routines.entity';
-import { Exercise } from '../exercises/exercises.entity';
 import { uniqBy } from 'lodash';
 import { ExerciseToRoutine } from '../exercise-routine/exercise-routine.entity';
 import { ExerciseToRoutineRepository } from '../exercise-routine/exercise-routine.repository';
 import { find } from 'lodash';
+import { from, Observable } from 'rxjs';
 
 @Injectable()
 export class RoutinesService {
@@ -39,10 +40,7 @@ export class RoutinesService {
       this.routineRepository,
     );
     const { exercises, name, active } = createRoutineDto;
-    const exercisesToRoutine = await this.getCleanExercises(
-      exercises,
-      routineId,
-    );
+    const exercisesToRoutine = await this.getExercises(exercises, routineId);
     const routine = new Routine(
       routineId,
       name,
@@ -61,10 +59,12 @@ export class RoutinesService {
     });
   }
 
-  public async getRoutineByID(user: User, id: string): Promise<Routine> {
-    return await this.routineRepository.findOne({
-      where: { id, userId: user.id },
-    });
+  public getRoutineByID(user: User, id: string): Observable<Routine> {
+    return from(
+      this.routineRepository.findOne({
+        where: { id, userId: user.id },
+      }),
+    );
   }
 
   async deleteRoutine(id: string, user: User): Promise<void> {
@@ -84,28 +84,27 @@ export class RoutinesService {
   }
 
   async updateRoutine(user: User, routineDto: CreateRoutineDto, id: string) {
+    const routine = await this.routineRepository.findOne({
+      id,
+      userId: user.id,
+    });
     await this.exerciseToRoutineRepository.delete({ routineId: id });
-    const exerciseToRoutine: ExerciseToRoutine[] = await this.getCleanExercises(
-      routineDto.exercises,
-      id,
-    );
-    const routine = new Routine(
-      id,
-      routineDto.name,
-      user,
-      exerciseToRoutine,
-      routineDto.active,
-    );
-    const routineDB = await this.routineRepository.findOne({ id: routine.id });
-    if (routineDB) {
-      if (routine.active) {
-        await this.activateRoutine(user, routine.id);
-      }
-      routine.creationDate = routineDB.creationDate;
-      await this.toolsService.trySave(routine);
-    } else {
-      throw new NotFoundException();
+    await this.routineRepository.delete({ id, userId: user.id });
+    if (routineDto.exercises && routineDto.exercises.length > 0) {
+      routine.exerciseToRoutine = await this.getExercises(
+        routineDto.exercises,
+        id,
+      );
     }
+    if (routineDto.active) {
+      await this.activateRoutine(user, id);
+    }
+    if (routineDto.name) {
+      routine.name = routineDto.name;
+    }
+    await this.toolsService.trySave(routine);
+    delete routine.user;
+    return routine;
   }
 
   async activateRoutine(user: User, id: string): Promise<Routine> {
@@ -133,35 +132,30 @@ export class RoutinesService {
     return routine;
   }
 
-  private async getCleanExercises(
-    exercises: ExerciseRoutineModel[],
-    routineId: string,
-  ): Promise<ExerciseToRoutine[]> {
-    const exercisesNoRepeated: ExerciseRoutineModel[] = uniqBy(
-      exercises,
-      'exerciseId',
-    );
-    return await this.getExercises(exercisesNoRepeated, routineId);
-  }
-
   private async getExercises(
     allExercisesToRoutine: ExerciseRoutineModel[],
     routineId: string,
-  ) {
-    const exercisesToRoutine: ExerciseToRoutine[] = [];
-    for (let i = 0; i < allExercisesToRoutine.length; i++) {
+  ): Promise<ExerciseToRoutine[]> {
+    const finalExercises: ExerciseToRoutine[] = [];
+    const noRepeated: ExerciseRoutineModel[] = uniqBy(
+      allExercisesToRoutine,
+      exercise => {
+        return [exercise.exerciseId, exercise.day].join();
+      },
+    );
+    for (let i = 0; i < noRepeated.length; i++) {
       const exercise = await this.exerciseRepository.findOne({
-        id: allExercisesToRoutine[i].exerciseId,
+        id: noRepeated[i].exerciseId,
       });
       if (exercise) {
         const exerciseToRoutine = new ExerciseToRoutine(
-          allExercisesToRoutine[i].day,
+          noRepeated[i].day,
           routineId,
           exercise.id,
         );
-        exercisesToRoutine.push(exerciseToRoutine);
+        finalExercises.push(exerciseToRoutine);
       }
     }
-    return exercisesToRoutine;
+    return finalExercises;
   }
 }

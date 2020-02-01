@@ -5,12 +5,15 @@ import {
   Entity,
   Column,
   ManyToOne,
-  JoinTable,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Routine } from '../routines/routines.entity';
 
 @Entity()
 export class ExerciseToRoutine extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  public exerciseToRoutineId: number;
+
   @Column()
   day: number;
 
@@ -19,16 +22,20 @@ export class ExerciseToRoutine extends BaseEntity {
     routine => routine.exerciseToRoutine,
     { primary: true },
   )
-  @JoinTable()
-  routineId: string;
+  routine: Routine;
 
   @ManyToOne(
     type => Exercise,
     exercise => exercise.exerciseToRoutine,
-    { primary: true, eager: true },
+    { primary: true },
   )
-  @JoinTable()
+  exercise: Exercise;
+
+  @Column()
   exerciseId: number;
+
+  @Column()
+  routineId: string;
 
   constructor(day: number, routineId: string, exerciseId: number) {
     super();

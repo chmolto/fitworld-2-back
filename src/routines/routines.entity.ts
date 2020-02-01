@@ -38,10 +38,10 @@ export class Routine extends BaseEntity {
 
   @OneToMany(
     type => ExerciseToRoutine,
-    exerciseToRoutine => exerciseToRoutine.routineId,
+    exerciseToRoutine => exerciseToRoutine.routine,
     {
       cascade: true,
-      eager: true,
+      eager: true
     },
   )
   public exerciseToRoutine: ExerciseToRoutine[];
