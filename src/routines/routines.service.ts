@@ -137,19 +137,13 @@ export class RoutinesService {
     routineId: string,
   ): Promise<ExerciseToRoutine[]> {
     const finalExercises: ExerciseToRoutine[] = [];
-    const noRepeated: ExerciseRoutineModel[] = uniqBy(
-      allExercisesToRoutine,
-      exercise => {
-        return [exercise.exerciseId, exercise.day].join();
-      },
-    );
-    for (let i = 0; i < noRepeated.length; i++) {
+    for (let i = 0; i < allExercisesToRoutine.length; i++) {
       const exercise = await this.exerciseRepository.findOne({
-        id: noRepeated[i].exerciseId,
+        id: allExercisesToRoutine[i].exerciseId,
       });
       if (exercise) {
         const exerciseToRoutine = new ExerciseToRoutine(
-          noRepeated[i].day,
+          allExercisesToRoutine[i].day,
           routineId,
           exercise.id,
         );
